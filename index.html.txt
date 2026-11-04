@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Euptelea - 专注与时间管理</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel Standalone for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // 简易 SVG 图标组件，确保零依赖完美运行
+        const Icon = ({ name, size = 20, className = "" }) => {
+            const icons = {
+                play: <path d="M5 3l14 9-14 9V3z"/>,
+                pause: <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>,
+                square: <rect x="4" y="4" width="16" height="16" rx="2"/>,
+                calendar: <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/>,
+                settings: <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>,
+                trash: <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>,
+                plus: <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>,
+                download: <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>,
+                upload: <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>,
+                x: <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>,
+                check: <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>,
+                chevronLeft: <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>,
+                chevronRight: <path d="M10.06 15.06l5.94-5.94-5.94-5.94L11.47 1.76l7.35 7.35-7.35 7.35z"/>,
+                book: <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>,
+                clock: <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>,
+                image: <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+            };
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+                    {icons[name] || null}
+                </svg>
+            );
+        };
+
+        const THEMES = [
+            { id: '#9F3025', name: '朱红', hex: '#9F3025' },
+            { id: '#F39D00', name: '琥珀', hex: '#F39D00' },
+            { id: '#789658', name: '橄榄', hex: '#789658' },
+            { id: '#294B85', name: '深海', hex: '#294B85' },
+            { id: '#E6B6AA', name: '暖粉', hex: '#E6B6AA' },
+            { id: '#D7D9D8', name: '浅灰', hex: '#D7D9D8' },
+        ];
+
+        function App() {
+            const [currentTab, setCurrentTab] = useState('focus');
+            const [theme, setTheme] = useState(() => localStorage.getItem('euptelea_theme') || '#789658');
+            
+            // 计时器状态
+            const [timerState, setTimerState] = useState('idle'); // 'idle' | 'running' | 'paused'
+            const [startTime, setStartTime] = useState(null);
+            const [elapsedSeconds, setElapsedSeconds] = useState(0);
+            const [pausedMs, setPausedMs] = useState(0);
+            const [timerBgImage, setTimerBgImage] = useState(() => localStorage.getItem('euptelea_bg_img') || '');
+            
+            // 数据状态
+            const [sessions, setSessions] = useState(() => JSON.parse(localStorage.getItem('euptelea_sessions') || '[]'));
+            const [diaries, setDiaries] = useState(() => JSON.parse(localStorage.getItem('euptelea_diaries') || '{}'));
+            const [memo, setMemo] = useState(() => localStorage.getItem('euptelea_memo') || '');
+            
+            // 详情弹窗
+            const [selectedDate, setSelectedDate] = useState(null);
+            const [currentMonth, setCurrentMonth] = useState(new Date());
+
+            useEffect(() => { localStorage.setItem('euptelea_theme', theme); }, [theme]);
+            useEffect(() => { localStorage.setItem('euptelea_sessions', JSON.stringify(sessions)); }, [sessions]);
+            useEffect(() => { localStorage.setItem('euptelea_diaries', JSON.stringify(diaries)); }, [diaries]);
+            useEffect(() => { localStorage.setItem('euptelea_memo', memo); }, [memo]);
+            useEffect(() => { 
+                if(timerBgImage) localStorage.setItem('euptelea_bg_img', timerBgImage);
+                else localStorage.removeItem('euptelea_bg_img');
+            }, [timerBgImage]);
+
+            // 计时器逻辑
+            useEffect(() => {
+                let interval = null;
+                if (timerState === 'running') {
+                    interval = setInterval(() => {
+                        const now = Date.now();
+                        const currentElapsed = Math.floor((now - startTime - pausedMs) / 1000);
+                        setElapsedSeconds(currentElapsed >= 0 ? currentElapsed : 0);
+                    }, 200);
+                }
+                return () => clearInterval(interval);
+            }, [timerState, startTime, pausedMs]);
+
+            const startTimer = () => {
+                setStartTime(Date.now());
+                setPausedMs(0);
+                setElapsedSeconds(0);
+                setTimerState('running');
+            };
+
+            const pauseTimer = () => {
+                setTimerState('paused');
+            };
+
+            const resumeTimer = () => {
+                setTimerState('running');
+            };
+
+            const endTimer = () => {
+                if (elapsedSeconds > 0) {
+                    const nowIso = new Date().toISOString().split('T')[0];
+                    const newSession = {
+                        id: 's_' + Date.now(),
+                        startTime: new Date(startTime).toISOString(),
+                        endTime: new Date().toISOString(),
+                        durationSeconds: elapsedSeconds,
+                        date: nowIso,
+                        createdAt: new Date().toISOString()
+                    };
+                    setSessions(prev => [newSession, ...prev]);
+                }
+                setTimerState('idle');
+                setElapsedSeconds(0);
+                setStartTime(null);
+                setPausedMs(0);
+            };
+
+            const formatTime = (totalSeconds) => {
+                const h = Math.floor(totalSeconds / 3600);
+                const m = Math.floor((totalSeconds % 3600) / 60);
+                const s = totalSeconds % 60;
+                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            };
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todaySessions = sessions.filter(s => s.date === todayStr);
+            const todayTotalSeconds = todaySessions.reduce((acc, s) => acc + s.durationSeconds, 0);
+
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (uploadEvent) => {
+                        setTimerBgImage(uploadEvent.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const exportData = () => {
+                const data = { sessions, diaries, memo, version: '1.1' };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `euptelea_backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+            };
+
+            const clearAllData = () => {
+                if (window.confirm('确定要清空全部数据吗？此操作不可恢复！')) {
+                    setSessions([]);
+                    setDiaries({});
+                    setMemo('');
+                    localStorage.clear();
+                    alert('数据已清空');
+                }
+            };
+
+            return (
+                <div className="max-w-md mx-auto min-h-screen bg-white shadow-xl flex flex-col relative pb-20">
+                    {/* 头部导航 */}
+                    <header className="px-6 py-4 flex justify-between items-center border-b border-gray-100">
+                        <h1 className="text-xl font-bold tracking-wider" style={{ color: theme }}>Euptelea</h1>
+                        <button onClick={() => setCurrentTab('settings')} className="p-2 text-gray-500 hover:text-black">
+                            <Icon name="settings" size={22} />
+                        </button>
+                    </header>
+
+                    {/* 主体内容 */}
+                    <main className="flex-1 overflow-y-auto p-6">
+                        {currentTab === 'focus' && (
+                            <div className="space-y-6">
+                                {/* 1:1 计时器卡片 */}
+                                <div 
+                                    className="w-full aspect-square rounded-3xl shadow-lg relative flex flex-col justify-between p-6 text-white overflow-hidden transition-all"
+                                    style={{
+                                        backgroundColor: timerBgImage ? 'transparent' : theme,
+                                        backgroundImage: timerBgImage ? `url(${timerBgImage})` : 'none',
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center'
+                                    }}
+                                >
+                                    {timerBgImage && <div className="absolute inset-0 bg-black/35 backdrop-blur-[1px]"></div>}
+
+                                    {/* 顶部状态与背景图更换 */}
+                                    <div className="relative z-10 flex justify-between items-center">
+                                        <div className="flex items-center space-x-2 bg-black/20 px-3 py-1 rounded-full text-xs backdrop-blur-md">
+                                            <span className={`w-2 h-2 rounded-full ${timerState === 'running' ? 'bg-white' : timerState === 'paused' ? 'bg-yellow-400' : 'bg-gray-300'}`}></span>
+                                            <span>{timerState === 'running' ? '专注中' : timerState === 'paused' ? '已暂停' : '准备就绪'}</span>
+                                        </div>
+                                        <label className="cursor-pointer bg-black/20 p-2 rounded-full hover:bg-black/40 backdrop-blur-md transition">
+                                            <Icon name="image" size={16} />
+                                            <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                                        </label>
+                                    </div>
+
+                                    {/* 计时器数字显示 */}
+                                    <div className="relative z-10 text-center my-auto">
+                                        <div className="text-5xl font-mono font-bold tracking-tight drop-shadow-md">
+                                            {formatTime(elapsedSeconds)}
+                                        </div>
+                                        <div className="text-xs opacity-80 mt-2">今日累计 {Math.floor(todayTotalSeconds / 60)} 分钟</div>
+                                    </div>
+
+                                    {/* 计时控制按钮 */}
+                                    <div className="relative z-10 flex space-x-3">
+                                        {timerState === 'idle' && (
+                                            <button 
+                                                onClick={startTimer}
+                                                className="w-full py-4 rounded-2xl font-bold shadow-lg transition active:scale-95 text-white"
+                                                style={{ backgroundColor: theme }}
+                                            >
+                                                开始专注
+                                            </button>
+                                        )}
+                                        {timerState === 'running' && (
+                                            <>
+                                                <button onClick={pauseTimer} className="flex-1 py-3 rounded-2xl bg-white/30 backdrop-blur-md font-semibold text-white hover:bg-white/40 transition">
+                                                    暂停
+                                                </button>
+                                                <button onClick={endTimer} className="flex-1 py-3 rounded-2xl font-semibold text-white transition active:scale-95" style={{ backgroundColor: theme }}>
+                                                    结束记录
+                                                </button>
+                                            </>
+                                        )}
+                                        {timerState === 'paused' && (
+                                            <>
+                                                <button onClick={resumeTimer} className="flex-1 py-3 rounded-2xl bg-white/30 backdrop-blur-md font-semibold text-white hover:bg-white/40 transition">
+                                                    继续
+                                                </button>
+                                                <button onClick={endTimer} className="flex-1 py-3 rounded-2xl font-semibold text-white transition active:scale-95" style={{ backgroundColor: theme }}>
+                                                    结束记录
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* 便签备忘录 */}
+                                <div className="bg-amber-50/60 border border-amber-100 rounded-2xl p-4 shadow-sm">
+                                    <div className="flex items-center space-x-2 mb-2 text-amber-800 text-sm font-semibold">
+                                        <Icon name="book" size={16} />
+                                        <span>随手便签</span>
+                                    </div>
+                                    <textarea 
+                                        value={memo} 
+                                        onChange={(e) => setMemo(e.target.value)}
+                                        placeholder="随手记点什么..."
+                                        rows="4"
+                                        className="w-full bg-transparent text-sm resize-none focus:outline-none text-gray-700 placeholder-amber-900/40"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        )}
+
+                        {currentTab === 'calendar' && (
+                            <CalendarView sessions={sessions} diaries={diaries} theme={theme} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onSelectDate={(date) => setSelectedDate(date)} />
+                        )}
+
+                        {currentTab === 'settings' && (
+                            <div className="space-y-6">
+                                <h2 className="text-lg font-bold">主题色设置</h2>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {THEMES.map(t => (
+                                        <button 
+                                            key={t.id} 
+                                            onClick={() => setTheme(t.id)}
+                                            className={`p-3 rounded-xl border flex items-center space-x-2 transition ${theme === t.id ? 'border-black ring-2 ring-black/10' : 'border-gray-200'}`}
+                                        >
+                                            <span className="w-5 h-5 rounded-full" style={{ backgroundColor: t.hex }}></span>
+                                            <span className="text-sm font-medium">{t.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <h2 className="text-lg font-bold pt-4">数据管理</h2>
+                                <div className="space-y-3">
+                                    <button onClick={exportData} className="w-full py-3 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium text-sm flex items-center justify-center space-x-2 transition">
+                                        <Icon name="download" size={18} />
+                                        <span>导出全部数据 (JSON)</span>
+                                    </button>
+                                    <button onClick={clearAllData} className="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium text-sm flex items-center justify-center space-x-2 transition">
+                                        <Icon name="trash" size={18} />
+                                        <span>清空全部数据</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* 底部 Tab 栏 */}
+                    <nav className="absolute bottom-0 left-0 right-0 h-16 bg-white border-t border-gray-100 flex justify-around items-center px-6">
+                        <button onClick={() => setCurrentTab('focus')} className={`flex flex-col items-center space-y-1 ${currentTab === 'focus' ? '' : 'text-gray-400'}`} style={{ color: currentTab === 'focus' ? theme : undefined }}>
+                            <Icon name="clock" size={22} />
+                            <span className="text-xs font-medium">专注</span>
+                        </button>
+                        <button onClick={() => setCurrentTab('calendar')} className={`flex flex-col items-center space-y-1 ${currentTab === 'calendar' ? '' : 'text-gray-400'}`} style={{ color: currentTab === 'calendar' ? theme : undefined }}>
+                            <Icon name="calendar" size={22} />
+                            <span className="text-xs font-medium">日历</span>
+                        </button>
+                    </nav>
+
+                    {/* 日期详情弹窗 */}
+                    {selectedDate && (
+                        <DateDetailModal 
+                            date={selectedDate} 
+                            sessions={sessions.filter(s => s.date === selectedDate)}
+                            diary={diaries[selectedDate] || ''}
+                            onClose={() => setSelectedDate(null)}
+                            onSaveDiary={(content) => {
+                                setDiaries(prev => ({ ...prev, [selectedDate]: content }));
+                            }}
+                            theme={theme}
+                        />
+                    )}
+                </div>
+            );
+        }
+
+        // 日历组件
+        function CalendarView({ sessions, diaries, theme, currentMonth, setCurrentMonth, onSelectDate }) {
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDayIndex = new Date(year, month, 1).getDay();
+
+            // 计算每天总时长
+            const dailyMap = useMemo(() => {
+                const map = {};
+                sessions.forEach(s => {
+                    map[s.date] = (map[s.date] || 0) + s.durationSeconds;
+                });
+                return map;
+            }, [sessions]);
+
+            const getBgColor = (seconds) => {
+                if (!seconds) return 'bg-gray-50';
+                if (seconds < 1800) return 'bg-emerald-100 text-emerald-900';
+                if (seconds < 5400) return 'bg-emerald-300 text-emerald-950';
+                return 'bg-emerald-500 text-white font-bold';
+            };
+
+            const calendarCells = [];
+            for (let i = 0; i < firstDayIndex; i++) {
+                calendarCells.push(<div key={'empty-' + i} className="h-14"></div>);
+            }
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const totalSec = dailyMap[dateStr] || 0;
+                const hasDiary = !!diaries[dateStr];
+                const isToday = dateStr === new Date().toISOString().split('T')[0];
+
+                calendarCells.push(
+                    <div 
+                        key={dateStr} 
+                        onClick={() => onSelectDate(dateStr)}
+                        className={`h-14 rounded-xl p-2 flex flex-col justify-between cursor-pointer transition relative border ${getBgColor(totalSec)} ${isToday ? 'ring-2 ring-black/20' : 'border-transparent'}`}
+                    >
+                        <span className="text-xs font-semibold">{d}</span>
+                        {hasDiary && <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-600"></span>}
+                    </div>
+                );
+            }
+
+            return (
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <h2 className="font-bold text-lg">{year}年 {month + 1}月</h2>
+                        <div className="flex space-x-1">
+                            <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 rounded-lg hover:bg-gray-100"><Icon name="chevronLeft" size={18} /></button>
+                            <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))} className="p-2 rounded-lg hover:bg-gray-100"><Icon name="chevronRight" size={18} /></button>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-7 gap-2 text-center text-xs font-medium text-gray-400">
+                        <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                    </div>
+                    <div className="grid grid-cols-7 gap-2">
+                        {calendarCells}
+                    </div>
+                </div>
+            );
+        }
+
+        // 日期详情弹窗（仅日记）
+        function DateDetailModal({ date, diary, onClose, onSaveDiary, theme }) {
+            const [content, setContent] = useState(diary);
+
+            useEffect(() => {
+                onSaveDiary(content);
+            }, [content]);
+
+            return (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl flex flex-col max-h-[80vh]">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-bold text-base">{date} 日记</h3>
+                            <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100"><Icon name="x" size={20} /></button>
+                        </div>
+                        <div className="flex-1 flex flex-col">
+                            <textarea 
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                placeholder="写下当天的日记..."
+                                className="w-full flex-1 bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-300"
+                            ></textarea>
+                            <div className="text-right text-xs text-gray-400 mt-2">自动保存</div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
