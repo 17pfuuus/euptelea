@@ -74,7 +74,7 @@
             const [showSettings, setShowSettings] = useState(false);
             const [theme, setTheme] = useState(() => localStorage.getItem('euptelea_theme') || '#789658');
             
-            // 用户昵称（默认 Euptelea，支持修改，限英文字符）
+            // 用户昵称
             const [username, setUsername] = useState(() => localStorage.getItem('euptelea_username') || 'Euptelea');
             const [isEditingUsername, setIsEditingUsername] = useState(false);
 
@@ -166,7 +166,6 @@
                 }
             };
 
-            // 限制用户昵称仅能输入英文字符
             const handleUsernameChange = (e) => {
                 const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
                 setUsername(val);
@@ -195,7 +194,7 @@
 
             return (
                 <div className="max-w-md mx-auto min-h-screen bg-white shadow-xl flex flex-col relative pb-20">
-                    {/* 头部导航：昵称可双击或点击编辑，仅支持英文字符 */}
+                    {/* 头部导航 */}
                     <header className="px-6 py-4 flex justify-between items-center border-b border-gray-100">
                         {isEditingUsername ? (
                             <input 
@@ -239,7 +238,6 @@
                         {showSettings ? (
                             <div className="space-y-6">
                                 <h2 className="text-lg font-bold">主题色选择</h2>
-                                {/* 精致精致小圆点选择区 */}
                                 <div className="flex space-x-4 items-center justify-start py-2">
                                     {THEMES.map(t => (
                                         <button 
@@ -301,7 +299,7 @@
                                         </label>
                                     </div>
 
-                                    {/* 计时器数字：待机界面（timerState === 'idle'）时显示为半透明 */}
+                                    {/* 计时器数字 */}
                                     <div className={`relative z-10 text-center my-auto transition-opacity ${timerState === 'idle' ? 'opacity-40' : 'opacity-100'}`}>
                                         <div className="text-5xl font-mono font-bold tracking-tight drop-shadow-md">
                                             {formatTime(elapsedSeconds)}
@@ -342,18 +340,14 @@
                                     </div>
                                 </div>
 
-                                {/* 便签备忘录：背景叠加半透明 + 变暗（带有 15% 黑色的半透明组合） */}
+                                {/* 便签备忘录：取消背景色设定（纯透明），仅设置主题色半透明边框 */}
                                 <div 
-                                    className="border rounded-2xl p-4 shadow-sm backdrop-blur-sm transition-all relative overflow-hidden"
+                                    className="border-2 rounded-2xl p-4 shadow-sm bg-transparent transition-all"
                                     style={{ 
-                                        backgroundColor: hexToRgba(theme, 0.25),
-                                        borderColor: hexToRgba(theme, 0.35)
+                                        borderColor: hexToRgba(theme, 0.45)
                                     }}
                                 >
-                                    {/* 变暗叠加层 */}
-                                    <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
-
-                                    <div className="relative z-10 flex items-center space-x-2 mb-2 text-sm font-semibold" style={{ color: theme }}>
+                                    <div className="flex items-center space-x-2 mb-2 text-sm font-semibold" style={{ color: theme }}>
                                         <Icon name="book" size={16} />
                                         <span>随手便签</span>
                                     </div>
@@ -362,7 +356,7 @@
                                         onChange={(e) => setMemo(e.target.value)}
                                         placeholder="随手记点什么..."
                                         rows="4"
-                                        className="relative z-10 w-full bg-transparent text-sm resize-none focus:outline-none placeholder-gray-500 font-medium"
+                                        className="w-full bg-transparent text-sm resize-none focus:outline-none placeholder-gray-400 font-medium"
                                         style={{ color: theme }}
                                     ></textarea>
                                 </div>
@@ -416,7 +410,7 @@
             );
         }
 
-        // 日历组件（取消当日黑色边框，右上角高亮显示黄色可爱五角星）
+        // 日历组件（五角星图标尺寸增大20%，即从 size=12 增大至 size=15）
         function CalendarView({ sessions, diaries, theme, currentMonth, setCurrentMonth, onSelectDate }) {
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
@@ -456,10 +450,10 @@
                         style={getCustomStyle(totalSec)}
                         className={`h-16 rounded-xl p-1 flex flex-col items-center justify-center cursor-pointer transition relative border border-transparent ${totalSec === 0 ? 'bg-gray-50 text-gray-700' : ''}`}
                     >
-                        {/* 当日右上角黄色可爱五角星 */}
+                        {/* 当日右上角黄色可爱五角星（尺寸增大 20%：size 从 12 改为 15） */}
                         {isToday && (
                             <span className="absolute top-1 right-1 text-amber-400 drop-shadow-sm">
-                                <Icon name="star" size={12} />
+                                <Icon name="star" size={15} />
                             </span>
                         )}
                         <span className="text-sm font-semibold">{d}</span>
