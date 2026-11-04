@@ -12,7 +12,14 @@
     <!-- Babel Standalone for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        /* 全局字体：中文华文中宋，英文/数字 Times New Roman */
+        body { 
+            font-family: "华文中宋", "Times New Roman", Times, serif; 
+        }
+        /* 数字和西文字母强制使用 Times New Roman */
+        .font-time, span, div, button, textarea, h1, h2, h3 {
+            font-family: "华文中宋", "Times New Roman", Times, serif;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -21,7 +28,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // 简易 SVG 图标组件，确保零依赖完美运行
+        // 简易 SVG 图标组件
         const Icon = ({ name, size = 20, className = "" }) => {
             const icons = {
                 play: <path d="M5 3l14 9-14 9V3z"/>,
@@ -49,16 +56,25 @@
         };
 
         const THEMES = [
-            { id: '#9F3025', name: '朱红', hex: '#9F3025' },
-            { id: '#F39D00', name: '琥珀', hex: '#F39D00' },
-            { id: '#789658', name: '橄榄', hex: '#789658' },
-            { id: '#294B85', name: '深海', hex: '#294B85' },
-            { id: '#E6B6AA', name: '暖粉', hex: '#E6B6AA' },
-            { id: '#D7D9D8', name: '浅灰', hex: '#D7D9D8' },
+            { id: '#9F3025', hex: '#9F3025' },
+            { id: '#F39D00', hex: '#F39D00' },
+            { id: '#789658', hex: '#789658' },
+            { id: '#294B85', hex: '#294B85' },
+            { id: '#E6B6AA', hex: '#E6B6AA' },
+            { id: '#D7D9D8', hex: '#D7D9D8' },
         ];
+
+        // 辅助函数：十六进制颜色转带透明度的 rgba
+        const hexToRgba = (hex, alpha) => {
+            let c = hex.replace('#', '');
+            if (c.length === 3) c = c.split('').map(x => x + x).join('');
+            const num = parseInt(c, 16);
+            return `rgba(${num >> 16}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+        };
 
         function App() {
             const [currentTab, setCurrentTab] = useState('focus');
+            const [showSettings, setShowSettings] = useState(false); // 控制设置面板显隐
             const [theme, setTheme] = useState(() => localStorage.getItem('euptelea_theme') || '#789658');
             
             // 计时器状态
@@ -177,118 +193,38 @@
 
             return (
                 <div className="max-w-md mx-auto min-h-screen bg-white shadow-xl flex flex-col relative pb-20">
-                    {/* 头部导航 */}
+                    {/* 头部导航：用户昵称 euptelea 设为主题色 */}
                     <header className="px-6 py-4 flex justify-between items-center border-b border-gray-100">
-                        <h1 className="text-xl font-bold tracking-wider" style={{ color: theme }}>Euptelea</h1>
-                        <button onClick={() => setCurrentTab('settings')} className="p-2 text-gray-500 hover:text-black">
+                        <h1 className="text-xl font-bold tracking-wider" style={{ color: theme }}>euptelea</h1>
+                        <button 
+                            onClick={() => {
+                                if (showSettings) {
+                                    setShowSettings(false);
+                                    setCurrentTab('focus');
+                                } else {
+                                    setShowSettings(true);
+                                    setCurrentTab('settings');
+                                }
+                            }} 
+                            className="p-2 text-gray-500 hover:text-black transition"
+                        >
                             <Icon name="settings" size={22} />
                         </button>
                     </header>
 
                     {/* 主体内容 */}
                     <main className="flex-1 overflow-y-auto p-6">
-                        {currentTab === 'focus' && (
+                        {showSettings ? (
                             <div className="space-y-6">
-                                {/* 1:1 计时器卡片 */}
-                                <div 
-                                    className="w-full aspect-square rounded-3xl shadow-lg relative flex flex-col justify-between p-6 text-white overflow-hidden transition-all"
-                                    style={{
-                                        backgroundColor: timerBgImage ? 'transparent' : theme,
-                                        backgroundImage: timerBgImage ? `url(${timerBgImage})` : 'none',
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center'
-                                    }}
-                                >
-                                    {timerBgImage && <div className="absolute inset-0 bg-black/35 backdrop-blur-[1px]"></div>}
-
-                                    {/* 顶部状态与背景图更换 */}
-                                    <div className="relative z-10 flex justify-between items-center">
-                                        <div className="flex items-center space-x-2 bg-black/20 px-3 py-1 rounded-full text-xs backdrop-blur-md">
-                                            <span className={`w-2 h-2 rounded-full ${timerState === 'running' ? 'bg-white' : timerState === 'paused' ? 'bg-yellow-400' : 'bg-gray-300'}`}></span>
-                                            <span>{timerState === 'running' ? '专注中' : timerState === 'paused' ? '已暂停' : '准备就绪'}</span>
-                                        </div>
-                                        <label className="cursor-pointer bg-black/20 p-2 rounded-full hover:bg-black/40 backdrop-blur-md transition">
-                                            <Icon name="image" size={16} />
-                                            <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                                        </label>
-                                    </div>
-
-                                    {/* 计时器数字显示 */}
-                                    <div className="relative z-10 text-center my-auto">
-                                        <div className="text-5xl font-mono font-bold tracking-tight drop-shadow-md">
-                                            {formatTime(elapsedSeconds)}
-                                        </div>
-                                        <div className="text-xs opacity-80 mt-2">今日累计 {Math.floor(todayTotalSeconds / 60)} 分钟</div>
-                                    </div>
-
-                                    {/* 计时控制按钮 */}
-                                    <div className="relative z-10 flex space-x-3">
-                                        {timerState === 'idle' && (
-                                            <button 
-                                                onClick={startTimer}
-                                                className="w-full py-4 rounded-2xl font-bold shadow-lg transition active:scale-95 text-white"
-                                                style={{ backgroundColor: theme }}
-                                            >
-                                                开始专注
-                                            </button>
-                                        )}
-                                        {timerState === 'running' && (
-                                            <>
-                                                <button onClick={pauseTimer} className="flex-1 py-3 rounded-2xl bg-white/30 backdrop-blur-md font-semibold text-white hover:bg-white/40 transition">
-                                                    暂停
-                                                </button>
-                                                <button onClick={endTimer} className="flex-1 py-3 rounded-2xl font-semibold text-white transition active:scale-95" style={{ backgroundColor: theme }}>
-                                                    结束记录
-                                                </button>
-                                            </>
-                                        )}
-                                        {timerState === 'paused' && (
-                                            <>
-                                                <button onClick={resumeTimer} className="flex-1 py-3 rounded-2xl bg-white/30 backdrop-blur-md font-semibold text-white hover:bg-white/40 transition">
-                                                    继续
-                                                </button>
-                                                <button onClick={endTimer} className="flex-1 py-3 rounded-2xl font-semibold text-white transition active:scale-95" style={{ backgroundColor: theme }}>
-                                                    结束记录
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* 便签备忘录 */}
-                                <div className="bg-amber-50/60 border border-amber-100 rounded-2xl p-4 shadow-sm">
-                                    <div className="flex items-center space-x-2 mb-2 text-amber-800 text-sm font-semibold">
-                                        <Icon name="book" size={16} />
-                                        <span>随手便签</span>
-                                    </div>
-                                    <textarea 
-                                        value={memo} 
-                                        onChange={(e) => setMemo(e.target.value)}
-                                        placeholder="随手记点什么..."
-                                        rows="4"
-                                        className="w-full bg-transparent text-sm resize-none focus:outline-none text-gray-700 placeholder-amber-900/40"
-                                    ></textarea>
-                                </div>
-                            </div>
-                        )}
-
-                        {currentTab === 'calendar' && (
-                            <CalendarView sessions={sessions} diaries={diaries} theme={theme} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onSelectDate={(date) => setSelectedDate(date)} />
-                        )}
-
-                        {currentTab === 'settings' && (
-                            <div className="space-y-6">
-                                <h2 className="text-lg font-bold">主题色设置</h2>
-                                <div className="grid grid-cols-3 gap-3">
+                                <h2 className="text-lg font-bold">主题色选择</h2>
+                                <div className="grid grid-cols-6 gap-3">
                                     {THEMES.map(t => (
                                         <button 
                                             key={t.id} 
                                             onClick={() => setTheme(t.id)}
-                                            className={`p-3 rounded-xl border flex items-center space-x-2 transition ${theme === t.id ? 'border-black ring-2 ring-black/10' : 'border-gray-200'}`}
-                                        >
-                                            <span className="w-5 h-5 rounded-full" style={{ backgroundColor: t.hex }}></span>
-                                            <span className="text-sm font-medium">{t.name}</span>
-                                        </button>
+                                            className={`h-10 rounded-full border flex items-center justify-center transition ${theme === t.id ? 'border-black ring-2 ring-black/10 scale-105' : 'border-gray-200'}`}
+                                            style={{ backgroundColor: t.hex }}
+                                        ></button>
                                     ))}
                                 </div>
 
@@ -304,22 +240,131 @@
                                     </button>
                                 </div>
                             </div>
+                        ) : currentTab === 'focus' ? (
+                            <div className="space-y-6">
+                                {/* 1:1 计时器卡片：默认颜色为主题色；自定义图片时暗化处理减弱（背景遮罩透明度调低为 15%） */}
+                                <div 
+                                    className="w-full aspect-square rounded-3xl shadow-lg relative flex flex-col justify-between p-6 text-white overflow-hidden transition-all"
+                                    style={{
+                                        backgroundColor: timerBgImage ? 'transparent' : theme,
+                                        backgroundImage: timerBgImage ? `url(${timerBgImage})` : 'none',
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center'
+                                    }}
+                                >
+                                    {timerBgImage && <div className="absolute inset-0 bg-black/15 backdrop-blur-[0.5px]"></div>}
+
+                                    {/* 顶部状态与背景图更换 */}
+                                    <div className="relative z-10 flex justify-between items-center">
+                                        <div className="flex items-center space-x-2 bg-black/25 px-3 py-1 rounded-full text-xs backdrop-blur-md">
+                                            <span className="w-2 h-2 rounded-full bg-white"></span>
+                                            <span>{timerState === 'running' ? '专注中' : timerState === 'paused' ? '已暂停' : '准备就绪'}</span>
+                                        </div>
+                                        <label className="cursor-pointer bg-black/25 p-2 rounded-full hover:bg-black/40 backdrop-blur-md transition">
+                                            <Icon name="image" size={16} />
+                                            <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                                        </label>
+                                    </div>
+
+                                    {/* 计时器数字显示 */}
+                                    <div className="relative z-10 text-center my-auto">
+                                        <div className="text-5xl font-mono font-bold tracking-tight drop-shadow-md">
+                                            {formatTime(elapsedSeconds)}
+                                        </div>
+                                        <div className="text-xs opacity-90 mt-2">今日累计 {Math.floor(todayTotalSeconds / 60)} 分钟</div>
+                                    </div>
+
+                                    {/* 计时控制按钮：统一采用半透明白色背景 */}
+                                    <div className="relative z-10 flex space-x-3">
+                                        {timerState === 'idle' && (
+                                            <button 
+                                                onClick={startTimer}
+                                                className="w-full py-4 rounded-2xl font-bold shadow-lg transition active:scale-95 bg-white/30 backdrop-blur-md text-white hover:bg-white/40"
+                                            >
+                                                开始专注
+                                            </button>
+                                        )}
+                                        {timerState === 'running' && (
+                                            <>
+                                                <button onClick={pauseTimer} className="flex-1 py-3 rounded-2xl bg-white/30 backdrop-blur-md font-semibold text-white hover:bg-white/40 transition">
+                                                    暂停
+                                                </button>
+                                                <button onClick={endTimer} className="flex-1 py-3 rounded-2xl bg-white/30 backdrop-blur-md font-semibold text-white hover:bg-white/40 transition">
+                                                    结束记录
+                                                </button>
+                                            </>
+                                        )}
+                                        {timerState === 'paused' && (
+                                            <>
+                                                <button onClick={resumeTimer} className="flex-1 py-3 rounded-2xl bg-white/30 backdrop-blur-md font-semibold text-white hover:bg-white/40 transition">
+                                                    继续
+                                                </button>
+                                                <button onClick={endTimer} className="flex-1 py-3 rounded-2xl bg-white/30 backdrop-blur-md font-semibold text-white hover:bg-white/40 transition">
+                                                    结束记录
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* 便签备忘录：背景为主题色的透明色版本（alpha=30%），字体颜色设为主题色 */}
+                                <div 
+                                    className="border rounded-2xl p-4 shadow-sm backdrop-blur-sm transition-all"
+                                    style={{ 
+                                        backgroundColor: hexToRgba(theme, 0.3),
+                                        borderColor: hexToRgba(theme, 0.4)
+                                    }}
+                                >
+                                    <div 
+                                        className="flex items-center space-x-2 mb-2 text-sm font-semibold"
+                                        style={{ color: theme }}
+                                    >
+                                        <Icon name="book" size={16} />
+                                        <span>随手便签</span>
+                                    </div>
+                                    <textarea 
+                                        value={memo} 
+                                        onChange={(e) => setMemo(e.target.value)}
+                                        placeholder="随手记点什么..."
+                                        rows="4"
+                                        className="w-full bg-transparent text-sm resize-none focus:outline-none placeholder-gray-500 font-medium"
+                                        style={{ color: theme }}
+                                    ></textarea>
+                                </div>
+                            </div>
+                        ) : currentTab === 'calendar' && (
+                            <CalendarView 
+                                sessions={sessions} 
+                                diaries={diaries} 
+                                theme={theme} 
+                                currentMonth={currentMonth} 
+                                setCurrentMonth={setCurrentMonth} 
+                                onSelectDate={(date) => setSelectedDate(date)} 
+                            />
                         )}
                     </main>
 
                     {/* 底部 Tab 栏 */}
                     <nav className="absolute bottom-0 left-0 right-0 h-16 bg-white border-t border-gray-100 flex justify-around items-center px-6">
-                        <button onClick={() => setCurrentTab('focus')} className={`flex flex-col items-center space-y-1 ${currentTab === 'focus' ? '' : 'text-gray-400'}`} style={{ color: currentTab === 'focus' ? theme : undefined }}>
+                        <button 
+                            onClick={() => { setShowSettings(false); setCurrentTab('focus'); }} 
+                            className={`flex flex-col items-center space-y-1 ${!showSettings && currentTab === 'focus' ? '' : 'text-gray-400'}`} 
+                            style={{ color: !showSettings && currentTab === 'focus' ? theme : undefined }}
+                        >
                             <Icon name="clock" size={22} />
                             <span className="text-xs font-medium">专注</span>
                         </button>
-                        <button onClick={() => setCurrentTab('calendar')} className={`flex flex-col items-center space-y-1 ${currentTab === 'calendar' ? '' : 'text-gray-400'}`} style={{ color: currentTab === 'calendar' ? theme : undefined }}>
+                        <button 
+                            onClick={() => { setShowSettings(false); setCurrentTab('calendar'); }} 
+                            className={`flex flex-col items-center space-y-1 ${!showSettings && currentTab === 'calendar' ? '' : 'text-gray-400'}`} 
+                            style={{ color: !showSettings && currentTab === 'calendar' ? theme : undefined }}
+                        >
                             <Icon name="calendar" size={22} />
                             <span className="text-xs font-medium">日历</span>
                         </button>
                     </nav>
 
-                    {/* 日期详情弹窗 */}
+                    {/* 日期详情弹窗（含自动记录当天累计专注时间） */}
                     {selectedDate && (
                         <DateDetailModal 
                             date={selectedDate} 
@@ -336,7 +381,7 @@
             );
         }
 
-        // 日历组件
+        // 日历组件（日历背景色按主题色渐变，卡片数字及日记圆点居中，选中边框为黑色）
         function CalendarView({ sessions, diaries, theme, currentMonth, setCurrentMonth, onSelectDate }) {
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
@@ -344,7 +389,6 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const firstDayIndex = new Date(year, month, 1).getDay();
 
-            // 计算每天总时长
             const dailyMap = useMemo(() => {
                 const map = {};
                 sessions.forEach(s => {
@@ -353,16 +397,24 @@
                 return map;
             }, [sessions]);
 
-            const getBgColor = (seconds) => {
+            // 根据主题色与专注时长计算渐变背景色
+            const getDynamicBg = (seconds) => {
                 if (!seconds) return 'bg-gray-50';
-                if (seconds < 1800) return 'bg-emerald-100 text-emerald-900';
-                if (seconds < 5400) return 'bg-emerald-300 text-emerald-950';
-                return 'bg-emerald-500 text-white font-bold';
+                if (seconds < 1800) return ''; // 轻度
+                if (seconds < 5400) return ''; // 中度
+                return ''; // 深度
+            };
+
+            const getCustomStyle = (seconds) => {
+                if (!seconds) return {};
+                if (seconds < 1800) return { backgroundColor: hexToRgba(theme, 0.2), color: '#111' };
+                if (seconds < 5400) return { backgroundColor: hexToRgba(theme, 0.5), color: '#111' };
+                return { backgroundColor: theme, color: '#fff', fontWeight: 'bold' };
             };
 
             const calendarCells = [];
             for (let i = 0; i < firstDayIndex; i++) {
-                calendarCells.push(<div key={'empty-' + i} className="h-14"></div>);
+                calendarCells.push(<div key={'empty-' + i} className="h-16"></div>);
             }
             for (let d = 1; d <= daysInMonth; d++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -374,10 +426,11 @@
                     <div 
                         key={dateStr} 
                         onClick={() => onSelectDate(dateStr)}
-                        className={`h-14 rounded-xl p-2 flex flex-col justify-between cursor-pointer transition relative border ${getBgColor(totalSec)} ${isToday ? 'ring-2 ring-black/20' : 'border-transparent'}`}
+                        style={getCustomStyle(totalSec)}
+                        className={`h-16 rounded-xl p-1 flex flex-col items-center justify-center cursor-pointer transition relative border ${totalSec === 0 ? 'bg-gray-50 text-gray-700' : ''} ${isToday ? 'border-black ring-1 ring-black' : 'border-transparent'}`}
                     >
-                        <span className="text-xs font-semibold">{d}</span>
-                        {hasDiary && <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-600"></span>}
+                        <span className="text-sm font-semibold">{d}</span>
+                        {hasDiary && <span className="w-1.5 h-1.5 rounded-full bg-amber-600 mt-1"></span>}
                     </div>
                 );
             }
@@ -401,9 +454,14 @@
             );
         }
 
-        // 日期详情弹窗（仅日记）
-        function DateDetailModal({ date, diary, onClose, onSaveDiary, theme }) {
+        // 日期详情弹窗（日记页面，自动在标题下记录当天累计专注时间）
+        function DateDetailModal({ date, sessions, diary, onClose, onSaveDiary, theme }) {
             const [content, setContent] = useState(diary);
+
+            // 计算当天总专注分钟数
+            const totalSec = sessions.reduce((acc, s) => acc + s.durationSeconds, 0);
+            const totalHours = (totalSec / 3600).toFixed(1);
+            const focusSummaryText = `今日专注${totalHours}小时`;
 
             useEffect(() => {
                 onSaveDiary(content);
@@ -411,12 +469,15 @@
 
             return (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl flex flex-col max-h-[80vh]">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-base">{date} 日记</h3>
+                    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl flex flex-col h-[75vh]">
+                        <div className="flex justify-between items-center mb-2">
+                            <div>
+                                <h3 className="font-bold text-base">{date} 日记</h3>
+                                <p className="text-xs text-gray-400 mt-0.5">{focusSummaryText}</p>
+                            </div>
                             <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100"><Icon name="x" size={20} /></button>
                         </div>
-                        <div className="flex-1 flex flex-col">
+                        <div className="flex-1 flex flex-col mt-3">
                             <textarea 
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
