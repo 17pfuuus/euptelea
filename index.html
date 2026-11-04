@@ -16,8 +16,7 @@
         body { 
             font-family: "华文中宋", "Times New Roman", Times, serif; 
         }
-        /* 数字和西文字母强制使用 Times New Roman */
-        .font-time, span, div, button, textarea, h1, h2, h3 {
+        .font-time, span, div, button, textarea, h1, h2, h3, input {
             font-family: "华文中宋", "Times New Roman", Times, serif;
         }
     </style>
@@ -37,16 +36,14 @@
                 calendar: <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/>,
                 settings: <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>,
                 trash: <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>,
-                plus: <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>,
                 download: <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>,
-                upload: <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>,
                 x: <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>,
-                check: <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>,
                 chevronLeft: <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>,
                 chevronRight: <path d="M10.06 15.06l5.94-5.94-5.94-5.94L11.47 1.76l7.35 7.35-7.35 7.35z"/>,
                 book: <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>,
                 clock: <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>,
-                image: <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                image: <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>,
+                star: <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
             };
             return (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -64,7 +61,7 @@
             { id: '#D7D9D8', hex: '#D7D9D8' },
         ];
 
-        // 辅助函数：十六进制颜色转带透明度的 rgba
+        // 十六进制转 rgba
         const hexToRgba = (hex, alpha) => {
             let c = hex.replace('#', '');
             if (c.length === 3) c = c.split('').map(x => x + x).join('');
@@ -74,11 +71,15 @@
 
         function App() {
             const [currentTab, setCurrentTab] = useState('focus');
-            const [showSettings, setShowSettings] = useState(false); // 控制设置面板显隐
+            const [showSettings, setShowSettings] = useState(false);
             const [theme, setTheme] = useState(() => localStorage.getItem('euptelea_theme') || '#789658');
             
+            // 用户昵称（默认 Euptelea，支持修改，限英文字符）
+            const [username, setUsername] = useState(() => localStorage.getItem('euptelea_username') || 'Euptelea');
+            const [isEditingUsername, setIsEditingUsername] = useState(false);
+
             // 计时器状态
-            const [timerState, setTimerState] = useState('idle'); // 'idle' | 'running' | 'paused'
+            const [timerState, setTimerState] = useState('idle');
             const [startTime, setStartTime] = useState(null);
             const [elapsedSeconds, setElapsedSeconds] = useState(0);
             const [pausedMs, setPausedMs] = useState(0);
@@ -94,6 +95,7 @@
             const [currentMonth, setCurrentMonth] = useState(new Date());
 
             useEffect(() => { localStorage.setItem('euptelea_theme', theme); }, [theme]);
+            useEffect(() => { localStorage.setItem('euptelea_username', username); }, [username]);
             useEffect(() => { localStorage.setItem('euptelea_sessions', JSON.stringify(sessions)); }, [sessions]);
             useEffect(() => { localStorage.setItem('euptelea_diaries', JSON.stringify(diaries)); }, [diaries]);
             useEffect(() => { localStorage.setItem('euptelea_memo', memo); }, [memo]);
@@ -122,13 +124,8 @@
                 setTimerState('running');
             };
 
-            const pauseTimer = () => {
-                setTimerState('paused');
-            };
-
-            const resumeTimer = () => {
-                setTimerState('running');
-            };
+            const pauseTimer = () => { setTimerState('paused'); };
+            const resumeTimer = () => { setTimerState('running'); };
 
             const endTimer = () => {
                 if (elapsedSeconds > 0) {
@@ -164,15 +161,19 @@
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = (uploadEvent) => {
-                        setTimerBgImage(uploadEvent.target.result);
-                    };
+                    reader.onload = (uploadEvent) => { setTimerBgImage(uploadEvent.target.result); };
                     reader.readAsDataURL(file);
                 }
             };
 
+            // 限制用户昵称仅能输入英文字符
+            const handleUsernameChange = (e) => {
+                const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                setUsername(val);
+            };
+
             const exportData = () => {
-                const data = { sessions, diaries, memo, version: '1.1' };
+                const data = { username, sessions, diaries, memo, version: '1.1' };
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -186,6 +187,7 @@
                     setSessions([]);
                     setDiaries({});
                     setMemo('');
+                    setUsername('Euptelea');
                     localStorage.clear();
                     alert('数据已清空');
                 }
@@ -193,9 +195,29 @@
 
             return (
                 <div className="max-w-md mx-auto min-h-screen bg-white shadow-xl flex flex-col relative pb-20">
-                    {/* 头部导航：用户昵称 euptelea 设为主题色 */}
+                    {/* 头部导航：昵称可双击或点击编辑，仅支持英文字符 */}
                     <header className="px-6 py-4 flex justify-between items-center border-b border-gray-100">
-                        <h1 className="text-xl font-bold tracking-wider" style={{ color: theme }}>euptelea</h1>
+                        {isEditingUsername ? (
+                            <input 
+                                type="text"
+                                value={username}
+                                onChange={handleUsernameChange}
+                                onBlur={() => setIsEditingUsername(false)}
+                                onKeyDown={(e) => { if(e.key === 'Enter') setIsEditingUsername(false); }}
+                                autoFocus
+                                className="text-xl font-bold border-b border-gray-300 focus:outline-none bg-transparent max-w-[200px]"
+                                style={{ color: theme }}
+                            />
+                        ) : (
+                            <h1 
+                                onClick={() => setIsEditingUsername(true)}
+                                title="点击修改昵称（仅英文）"
+                                className="text-xl font-bold tracking-wider cursor-pointer hover:opacity-80 transition" 
+                                style={{ color: theme }}
+                            >
+                                {username || 'Euptelea'}
+                            </h1>
+                        )}
                         <button 
                             onClick={() => {
                                 if (showSettings) {
@@ -217,15 +239,28 @@
                         {showSettings ? (
                             <div className="space-y-6">
                                 <h2 className="text-lg font-bold">主题色选择</h2>
-                                <div className="grid grid-cols-6 gap-3">
+                                {/* 精致精致小圆点选择区 */}
+                                <div className="flex space-x-4 items-center justify-start py-2">
                                     {THEMES.map(t => (
                                         <button 
                                             key={t.id} 
                                             onClick={() => setTheme(t.id)}
-                                            className={`h-10 rounded-full border flex items-center justify-center transition ${theme === t.id ? 'border-black ring-2 ring-black/10 scale-105' : 'border-gray-200'}`}
+                                            className={`w-7 h-7 rounded-full shadow-sm flex items-center justify-center transition-all ${theme === t.id ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105 opacity-80 hover:opacity-100'}`}
                                             style={{ backgroundColor: t.hex }}
                                         ></button>
                                     ))}
+                                </div>
+
+                                <h2 className="text-lg font-bold pt-4">用户设置</h2>
+                                <div className="space-y-2">
+                                    <label className="text-xs text-gray-500">修改用户昵称（仅限英文）：</label>
+                                    <input 
+                                        type="text"
+                                        value={username}
+                                        onChange={handleUsernameChange}
+                                        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                        placeholder="Euptelea"
+                                    />
                                 </div>
 
                                 <h2 className="text-lg font-bold pt-4">数据管理</h2>
@@ -242,7 +277,7 @@
                             </div>
                         ) : currentTab === 'focus' ? (
                             <div className="space-y-6">
-                                {/* 1:1 计时器卡片：默认颜色为主题色；自定义图片时暗化处理减弱（背景遮罩透明度调低为 15%） */}
+                                {/* 1:1 专注卡片 */}
                                 <div 
                                     className="w-full aspect-square rounded-3xl shadow-lg relative flex flex-col justify-between p-6 text-white overflow-hidden transition-all"
                                     style={{
@@ -266,15 +301,15 @@
                                         </label>
                                     </div>
 
-                                    {/* 计时器数字显示 */}
-                                    <div className="relative z-10 text-center my-auto">
+                                    {/* 计时器数字：待机界面（timerState === 'idle'）时显示为半透明 */}
+                                    <div className={`relative z-10 text-center my-auto transition-opacity ${timerState === 'idle' ? 'opacity-40' : 'opacity-100'}`}>
                                         <div className="text-5xl font-mono font-bold tracking-tight drop-shadow-md">
                                             {formatTime(elapsedSeconds)}
                                         </div>
                                         <div className="text-xs opacity-90 mt-2">今日累计 {Math.floor(todayTotalSeconds / 60)} 分钟</div>
                                     </div>
 
-                                    {/* 计时控制按钮：统一采用半透明白色背景 */}
+                                    {/* 按钮区域 */}
                                     <div className="relative z-10 flex space-x-3">
                                         {timerState === 'idle' && (
                                             <button 
@@ -307,18 +342,18 @@
                                     </div>
                                 </div>
 
-                                {/* 便签备忘录：背景为主题色的透明色版本（alpha=30%），字体颜色设为主题色 */}
+                                {/* 便签备忘录：背景叠加半透明 + 变暗（带有 15% 黑色的半透明组合） */}
                                 <div 
-                                    className="border rounded-2xl p-4 shadow-sm backdrop-blur-sm transition-all"
+                                    className="border rounded-2xl p-4 shadow-sm backdrop-blur-sm transition-all relative overflow-hidden"
                                     style={{ 
-                                        backgroundColor: hexToRgba(theme, 0.3),
-                                        borderColor: hexToRgba(theme, 0.4)
+                                        backgroundColor: hexToRgba(theme, 0.25),
+                                        borderColor: hexToRgba(theme, 0.35)
                                     }}
                                 >
-                                    <div 
-                                        className="flex items-center space-x-2 mb-2 text-sm font-semibold"
-                                        style={{ color: theme }}
-                                    >
+                                    {/* 变暗叠加层 */}
+                                    <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
+
+                                    <div className="relative z-10 flex items-center space-x-2 mb-2 text-sm font-semibold" style={{ color: theme }}>
                                         <Icon name="book" size={16} />
                                         <span>随手便签</span>
                                     </div>
@@ -327,7 +362,7 @@
                                         onChange={(e) => setMemo(e.target.value)}
                                         placeholder="随手记点什么..."
                                         rows="4"
-                                        className="w-full bg-transparent text-sm resize-none focus:outline-none placeholder-gray-500 font-medium"
+                                        className="relative z-10 w-full bg-transparent text-sm resize-none focus:outline-none placeholder-gray-500 font-medium"
                                         style={{ color: theme }}
                                     ></textarea>
                                 </div>
@@ -364,7 +399,7 @@
                         </button>
                     </nav>
 
-                    {/* 日期详情弹窗（含自动记录当天累计专注时间） */}
+                    {/* 日期详情弹窗 */}
                     {selectedDate && (
                         <DateDetailModal 
                             date={selectedDate} 
@@ -381,7 +416,7 @@
             );
         }
 
-        // 日历组件（日历背景色按主题色渐变，卡片数字及日记圆点居中，选中边框为黑色）
+        // 日历组件（取消当日黑色边框，右上角高亮显示黄色可爱五角星）
         function CalendarView({ sessions, diaries, theme, currentMonth, setCurrentMonth, onSelectDate }) {
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
@@ -396,14 +431,6 @@
                 });
                 return map;
             }, [sessions]);
-
-            // 根据主题色与专注时长计算渐变背景色
-            const getDynamicBg = (seconds) => {
-                if (!seconds) return 'bg-gray-50';
-                if (seconds < 1800) return ''; // 轻度
-                if (seconds < 5400) return ''; // 中度
-                return ''; // 深度
-            };
 
             const getCustomStyle = (seconds) => {
                 if (!seconds) return {};
@@ -427,8 +454,14 @@
                         key={dateStr} 
                         onClick={() => onSelectDate(dateStr)}
                         style={getCustomStyle(totalSec)}
-                        className={`h-16 rounded-xl p-1 flex flex-col items-center justify-center cursor-pointer transition relative border ${totalSec === 0 ? 'bg-gray-50 text-gray-700' : ''} ${isToday ? 'border-black ring-1 ring-black' : 'border-transparent'}`}
+                        className={`h-16 rounded-xl p-1 flex flex-col items-center justify-center cursor-pointer transition relative border border-transparent ${totalSec === 0 ? 'bg-gray-50 text-gray-700' : ''}`}
                     >
+                        {/* 当日右上角黄色可爱五角星 */}
+                        {isToday && (
+                            <span className="absolute top-1 right-1 text-amber-400 drop-shadow-sm">
+                                <Icon name="star" size={12} />
+                            </span>
+                        )}
                         <span className="text-sm font-semibold">{d}</span>
                         {hasDiary && <span className="w-1.5 h-1.5 rounded-full bg-amber-600 mt-1"></span>}
                     </div>
@@ -454,11 +487,10 @@
             );
         }
 
-        // 日期详情弹窗（日记页面，自动在标题下记录当天累计专注时间）
+        // 日期详情弹窗
         function DateDetailModal({ date, sessions, diary, onClose, onSaveDiary, theme }) {
             const [content, setContent] = useState(diary);
 
-            // 计算当天总专注分钟数
             const totalSec = sessions.reduce((acc, s) => acc + s.durationSeconds, 0);
             const totalHours = (totalSec / 3600).toFixed(1);
             const focusSummaryText = `今日专注${totalHours}小时`;
