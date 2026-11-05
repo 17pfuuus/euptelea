@@ -33,6 +33,15 @@
             -moz-appearance: textfield;
         }
     </style>
+    <!-- 关联 Manifest 清单 -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- 注册 Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+      }
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-800">
     <div id="root"></div>
