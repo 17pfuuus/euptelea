@@ -1,0 +1,12 @@
+{
+  "background_color": "#789657",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Euptelea",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Euptelea",
+  "start_url": "/",
+  "theme_color": "#bed79f",
+  "description": "focus and records"
+}
