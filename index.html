@@ -50,6 +50,7 @@
                 trash: <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>,
                 plus: <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>,
                 download: <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>,
+                upload: <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>,
                 x: <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>,
                 chevronLeft: <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>,
                 chevronRight: <path d="M10.06 15.06l5.94-5.94-5.94-5.94L11.47 1.76l7.35 7.35-7.35 7.35z"/>,
@@ -202,13 +203,37 @@
             };
 
             const exportData = () => {
-                const data = { username, sessions, diaries, memo, transactions, version: '1.4' };
+                const data = { username, sessions, diaries, memo, transactions, theme, version: '1.5' };
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `euptelea_backup_${new Date().toISOString().split('T')[0]}.json`;
                 a.click();
+            };
+
+            // 导入数据功能实现
+            const importData = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (uploadEvent) => {
+                    try {
+                        const json = JSON.parse(uploadEvent.target.result);
+                        if (window.confirm('导入数据将合并或覆盖当前本地数据，确定要导入吗？')) {
+                            if (json.username) { setUsername(json.username); localStorage.setItem('euptelea_username', json.username); }
+                            if (json.sessions) { setSessions(json.sessions); localStorage.setItem('euptelea_sessions', JSON.stringify(json.sessions)); }
+                            if (json.diaries) { setDiaries(json.diaries); localStorage.setItem('euptelea_diaries', JSON.stringify(json.diaries)); }
+                            if (json.memo) { setMemo(json.memo); localStorage.setItem('euptelea_memo', json.memo); }
+                            if (json.transactions) { setTransactions(json.transactions); localStorage.setItem('euptelea_transactions', JSON.stringify(json.transactions)); }
+                            if (json.theme) { setTheme(json.theme); localStorage.setItem('euptelea_theme', json.theme); }
+                            alert('数据导入成功！');
+                        }
+                    } catch (err) {
+                        alert('文件格式错误，解析 JSON 失败！');
+                    }
+                };
+                reader.readAsText(file);
             };
 
             const clearAllData = () => {
@@ -296,6 +321,11 @@
                                         <Icon name="download" size={18} />
                                         <span>导出全部数据 (JSON)</span>
                                     </button>
+                                    <label className="w-full py-3 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium text-sm flex items-center justify-center space-x-2 transition cursor-pointer">
+                                        <Icon name="upload" size={18} />
+                                        <span>导入数据恢复 (JSON)</span>
+                                        <input type="file" accept=".json" onChange={importData} className="hidden" />
+                                    </label>
                                     <button onClick={clearAllData} className="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium text-sm flex items-center justify-center space-x-2 transition">
                                         <Icon name="trash" size={18} />
                                         <span>清空全部数据</span>
@@ -365,21 +395,18 @@
                                     </div>
                                 </div>
 
+                                {/* 便签备忘录：去掉了 title，占位符改为“今日事，今日毕。”，字体放大50% */}
                                 <div 
                                     className="border-2 rounded-2xl p-4 shadow-sm bg-transparent transition-all"
                                     style={{ borderColor: hexToRgba(theme, 0.45) }}
                                 >
-                                    <div className="flex items-center space-x-2 mb-2 text-sm font-semibold" style={{ color: theme }}>
-                                        <Icon name="book" size={16} />
-                                        <span>随手便签</span>
-                                    </div>
                                     <textarea 
                                         value={memo} 
                                         onChange={(e) => setMemo(e.target.value)}
-                                        placeholder="随手记点什么..."
+                                        placeholder="今日事，今日毕。"
                                         rows="4"
-                                        className="w-full bg-transparent text-sm resize-none focus:outline-none placeholder-gray-400 font-medium font-num"
-                                        style={{ color: theme }}
+                                        className="w-full bg-transparent text-base resize-none focus:outline-none placeholder-gray-400 font-medium font-num"
+                                        style={{ color: theme, fontSize: '1.125rem', lineHeight: '1.75rem' }}
                                     ></textarea>
                                 </div>
                             </div>
@@ -480,7 +507,6 @@
             );
         }
 
-        // 记账主视图：横向柱状图，纵坐标为分类，bar细，顶端显示金额，过滤0消费分类
         function TransactionsView({ transactions, theme, currentMonth, setCurrentMonth, onOpenAdd, onEditTx }) {
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
@@ -490,14 +516,12 @@
                 return transactions.filter(t => t.date.startsWith(monthStr));
             }, [transactions, monthStr]);
 
-            // 计算各项支出月统计，并过滤掉金额为0的分类
             const activeCategoryExpenses = useMemo(() => {
                 const map = {};
                 PRESET_CATEGORIES.expense.forEach(cat => { map[cat] = 0; });
                 monthTxs.filter(t => t.type === 'expense').forEach(t => {
                     map[t.category] = (map[t.category] || 0) + t.amountCents;
                 });
-                // 仅保留金额 > 0 的分类
                 return Object.entries(map).filter(([cat, amount]) => amount > 0);
             }, [monthTxs]);
 
@@ -521,7 +545,6 @@
 
             return (
                 <div className="space-y-6">
-                    {/* 顶部支出分类横向柱状图卡片（过滤0消费） */}
                     <div className="bg-gray-900 text-white rounded-3xl p-5 shadow-lg space-y-3">
                         <div className="flex justify-between items-center text-xs opacity-80 border-b border-gray-800 pb-2">
                             <span>{year}年{month + 1}月支出分类统计</span>
@@ -607,7 +630,6 @@
             );
         }
 
-        // 记一笔表单弹窗
         function TransactionModal({ editingTx, theme, onClose, onSave, onDelete }) {
             const [type, setType] = useState(editingTx ? editingTx.type : 'expense');
             const [amount, setAmount] = useState(editingTx ? (editingTx.amountCents / 100).toString() : '');
@@ -738,7 +760,6 @@
             );
         }
 
-        // 日历组件
         function CalendarView({ sessions, diaries, theme, currentMonth, setCurrentMonth, onSelectDate }) {
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
@@ -810,7 +831,6 @@
             );
         }
 
-        // 日期详情弹窗
         function DateDetailModal({ date, sessions, transactions, diary, onClose, onSaveDiary, onGoToTransactions, theme }) {
             const [content, setContent] = useState(diary);
 
